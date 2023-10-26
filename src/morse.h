@@ -4,9 +4,16 @@
 #include <string.h>
 #include <EventQueue.h>
 
+enum MorseTiming {
+    DOT = 1,
+    DASH = 3,
+    WORD = 7,
+};
+
 const int LETTERS = 26;
-const int GAP_TIME_MS = 30;
+const int GAP_TIME_MS = 400;
 const int MAX_WORD_LENGTH = 10;
+const int MAX_MORSE_LENGTH = MAX_WORD_LENGTH * 18 + 8;
 const char* MORSE[LETTERS] = {
     ".-",
     "-...",
@@ -37,52 +44,53 @@ const char* MORSE[LETTERS] = {
 };
 
 namespace Morse {
-    struct MorseLightEvent {
-        unsigned long time;
-        bool state;
-    };
-
-    EventQueue<MorseLightEvent> morseQueue;
-
-    char word[MAX_WORD_LENGTH];
+    char morse_word[MAX_MORSE_LENGTH];
+    int light_state_sequence_size = 0;
+    bool light_state[MAX_MORSE_LENGTH];
     int morseLightPin;
-
-    unsigned long insert_event(unsigned long current, int gaps, bool state) {
-        current += gaps * GAP_TIME_MS;
-        morseQueue.push({current, !state});
-    }
-
-    void insert_events() {
-        unsigned long current = millis();
-        int len = strlen(word);
-        for (int i = 0; i < len; i++) {
-            if (word[i] == '.') current = insert_event(current, 3, HIGH);
-            if (word[i] == '-') current = insert_event(current, 5, HIGH);
-            current = insert_event(current, 3, LOW);
-        }
-        insert_event(current, 5, LOW);
-    }
+    unsigned long startTime = -1;
 
     void init(int pin, const char* w) {
         morseLightPin = pin;
         pinMode(pin, OUTPUT);
         digitalWrite(pin, HIGH);
 
-        strcpy(word, w);
-        insert_events();
+        morse_word[0] = '\0';
+        int len = strlen(w);
+        for (int i = 0; i < len; i++) {
+            sprintf(morse_word, "%s%s%s", morse_word, i == 0 ? "" : " ", MORSE[w[i] - 'a']);
+        }
+        len = strlen(morse_word);
+        for (int i = 0; i < len; i++) {
+            int sz = DOT;
+            bool state = HIGH, add_space = false;
+            if (morse_word[i] == '-') {
+                sz = DASH;
+            } else if (morse_word[i] == ' ') {
+                sz = DASH;
+                state = LOW;
+            }
+            if ((morse_word[i] == '.' || morse_word[i] == '-') && i + 1 < len && morse_word[i + 1] != ' ') {
+                add_space = true;
+            }
+            for (int j = 0; j < sz; j++) {
+                light_state[light_state_sequence_size++] = state;
+            }
+            if (add_space) {
+                light_state[light_state_sequence_size++] = LOW;
+            }
+        }
+        for (int i = 0; i < WORD; i++) {
+            light_state[light_state_sequence_size++] = LOW;
+        }
     }
 
     void update() {
-        if (morseQueue.isEmpty())
+        if (light_state_sequence_size == 0)
             return;
-        MorseLightEvent event = morseQueue.front();
-        unsigned long currentTime = millis();
-        if (event.time > currentTime)
-            return;
-        morseQueue.pop();
-        digitalWrite(morseLightPin, event.state);
-        if (morseQueue.isEmpty())
-            insert_events();
+        unsigned long now = millis();
+        int index = ((now - startTime) / GAP_TIME_MS) % light_state_sequence_size;
+        digitalWrite(morseLightPin, light_state[index]);
     }
 };
 

@@ -20,7 +20,7 @@ const uint8_t NUMBERS[10] = {
 namespace Display {
     const int DIGITS = 4;
     const int SEGMENTS = 8;
-    const unsigned long DELAY = 5;
+    const unsigned long DELAY = 2;
 
     int* digitPins;
     int* segmentPins;
