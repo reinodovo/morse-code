@@ -1,13 +1,3 @@
-<img
-  alt="Diagram"
-  class="diagram"
-  src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTAiIGhlaWdodD0iOTAiIHZpZXdCb3g9IjAgMCA5MCA5MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3QgeD0iMC41IiB5PSIwLjUiIHdpZHRoPSI4OSIgaGVpZ2h0PSI4OSIgc3Ryb2tlPSJibGFjayIvPgo8cmVjdCB4PSIyMC4yNSIgeT0iMzUuOSIgd2lkdGg9IjQ5LjUiIGhlaWdodD0iMTguMiIgc3Ryb2tlPSJibGFjayIvPgo8cmVjdCB4PSIyMi41IiB5PSI2Ny4zIiB3aWR0aD0iMTUiIGhlaWdodD0iOCIgc3Ryb2tlPSJibGFjayIvPgo8Y2lyY2xlIGN4PSI2MCIgY3k9IjcxLjMiIHI9IjYiIHN0cm9rZT0iYmxhY2siLz4KPGNpcmNsZSBjeD0iNzkiIGN5PSIxMSIgcj0iMiIgc3Ryb2tlPSJibGFjayIvPgo8cmVjdCB4PSIxMi41IiB5PSIxMy41IiB3aWR0aD0iMTMiIGhlaWdodD0iNyIgc3Ryb2tlPSJibGFjayIvPgo8L3N2Zz4K"
-/>
-<h2>On the Subject of Morse Code</h2>
-<p class="flavour-text">
-  An antiquated form of naval communication? What next? At least it's genuine
-  Morse Code, so pay attention and you might just learn something.
-</p>
 <ul>
   <li>
     Interpret the signal from the flashing light using the Morse Code chart to
@@ -73,6 +63,8 @@
         Respond at frequency:
       </th>
     </tr>
-    {{table}}
+    {% for station in stations %}
+    <tr><td style="text-align: center;padding: 0.3em 0.6em 0.2em;">{{ station.word }}</td><td style="text-align: center;direction: ltr;padding: 0.3em 0.6em 0.2em;">{{ station.frequency }} MHz</td></tr>
+    {% endfor %}
   </tbody>
 </table>

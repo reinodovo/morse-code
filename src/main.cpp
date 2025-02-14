@@ -35,11 +35,14 @@ void onManualCode(int code) {
 }
 
 void setup() {
-  PuzzleModule::onStart = start;
-  PuzzleModule::onRestart = restart;
-  PuzzleModule::onManualCode = onManualCode;
+  Module::name = "Morse Code";
+  Module::onStart = start;
+  Module::onRestart = restart;
+  Module::onManualCode = onManualCode;
 
-  if (!PuzzleModule::setup(PuzzleModule::StatusLight(RED_PIN, GREEN_PIN)))
+  PuzzleModule::statusLight = PuzzleModule::StatusLight(RED_PIN, GREEN_PIN);
+
+  if (!PuzzleModule::setup())
     ESP.restart();
 
   submitButton = Button(SUBMIT_BUTTON_PIN);
@@ -77,7 +80,7 @@ void loop() {
     selected_station = station();
   Display::setValue(stations[selected_station]);
   Display::update();
-  if (PuzzleModule::status() != PuzzleModule::ModuleStatus::Started)
+  if (Module::status() != Module::Status::Started)
     return;
   Morse::update();
   submitButton.update();
