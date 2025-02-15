@@ -8,7 +8,7 @@ tolerance = 0.3;
 button_width = 9;
 button_length = 16;
 button_distance_x = 30;
-button_distance_y = 16.7;
+button_distance_y = 18.7;
 
 knob_radius = 3.6;
 knob_distance_x = size - button_distance_x;
