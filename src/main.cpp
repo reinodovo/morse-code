@@ -40,7 +40,8 @@ void setup() {
   Module::onRestart = restart;
   Module::onManualCode = onManualCode;
 
-  PuzzleModule::statusLight = PuzzleModule::StatusLight(RED_PIN, GREEN_PIN);
+  PuzzleModule::statusLight =
+      PuzzleModule::StatusLight(RED_PIN, GREEN_PIN, INVERT_STATUS_LED);
 
   if (!PuzzleModule::setup())
     ESP.restart();

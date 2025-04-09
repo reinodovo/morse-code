@@ -19,6 +19,13 @@ display_width = 19.2;
 display_position_x = 19.75 + display_length / 2;
 display_position_y = 35.4 + display_width / 2;
 
+led_cover_size = 10;
+led_cover_radius = 5;
+led_cover_hole_length = 10;
+led_cover_hole_width = 8;
+led_height = 3.6;
+led_cover_hole_tolerance = 0.1;
+
 led_radius = 2.5;
 led_distance_x = 19;
 led_distance_y = size - 17;
@@ -37,5 +44,50 @@ module bottom() {
     bomb_module_bottom(height_above_pcb = 12.5);
 }
 
+module led_detail_border() {
+    difference() {
+        hull() {
+            translate([-led_cover_size / 2, 0]) sphere(led_cover_radius);
+            translate([led_cover_size / 2, 0]) sphere(led_cover_radius);
+        }
+        cube([led_cover_hole_length, led_cover_hole_width, 10], center = true);
+        translate([0, 0, -50]) cube([100, 100, 100], center = true);
+    }
+}
+
+module led_detail_inside() {
+    difference() {
+        intersection() {
+            hull() {
+                translate([-led_cover_size / 2, 0]) sphere(led_cover_radius);
+                translate([led_cover_size / 2, 0]) sphere(led_cover_radius);
+            }
+            cube([led_cover_hole_length, led_cover_hole_width, 10], center = true);
+        }
+        translate([0, 0, -50]) cube([100, 100, 100], center = true);
+        cylinder(led_height, led_radius + led_cover_hole_tolerance, led_radius + led_cover_hole_tolerance);
+    }
+}
+
+module pot_cover() {
+    corner_radius = 1;
+    cylinder_count = 8;
+    difference() {
+        translate([0, 0, corner_radius]) minkowski() {
+            cylinder(10 - 2 * corner_radius, 15 / 2 - corner_radius / 2, 15 / 2 - corner_radius / 2);
+            sphere(corner_radius);
+        }
+        cylinder(9, 5.9 / 2, 5.9 / 2);
+        cylinder(5, 4, 4);
+        for (i = [0:cylinder_count - 1]) {
+            rotate([0, 0, i * 360 / cylinder_count]) translate([15 / 2 + 1, 0]) cylinder(100, 2, 2);
+        }
+    }
+}
+
 top();
 bottom();
+rectangular_button(2.5, 8.4, button_length - tolerance, button_width - tolerance, 1, 1, "TX", 6, 1);
+led_detail_border();
+!led_detail_inside();
+pot_cover();
