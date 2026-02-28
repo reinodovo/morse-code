@@ -89,5 +89,5 @@ top();
 bottom();
 rectangular_button(2.5, 8.4, button_length - tolerance, button_width - tolerance, 1, 1, "TX", 6, 1);
 led_detail_border();
-!led_detail_inside();
+led_detail_inside();
 pot_cover();

@@ -1,13 +1,15 @@
 #include <Arduino.h>
 #include <display.h>
-#include <map>
+#include <modules/puzzle_module.h>
 #include <morse.h>
 #include <pot.h>
-#include <puzzle_module.h>
 #include <rules.h>
 #include <utils/Button.h>
 
+#include <map>
+
 const int RED_PIN = 22, GREEN_PIN = 23;
+PuzzleModule module(StatusLight(RED_PIN, GREEN_PIN));
 
 const int STATION_RANGE = 256;
 const int STATION_TOLERANCE = 120;
@@ -16,50 +18,44 @@ int selected_station = -1;
 int answer = 0;
 
 const int SUBMIT_BUTTON_PIN = 25;
-Button submitButton;
+Button submit_button;
 
 int station();
 void submit(ButtonState state, ButtonState _);
 
-void start() { Morse::startTime = millis(); }
+void start() { Morse::start_time = millis(); }
 
 void restart() {
   Morse::clear();
   Display::clear();
 }
 
-void onManualCode(int code) {
+void on_manual_code(int code) {
   StationWords words = generate_words(code);
   answer = esp_random() % STATIONS;
   Morse::setup(words[answer].c_str());
 }
 
 void setup() {
-  Module::name = "Morse Code";
-  Module::onStart = start;
-  Module::onRestart = restart;
-  Module::onManualCode = onManualCode;
+  module.on_start(start);
+  module.on_reset(restart);
+  module.on_manual_code(on_manual_code);
 
-  PuzzleModule::statusLight =
-      PuzzleModule::StatusLight(RED_PIN, GREEN_PIN, INVERT_STATUS_LED);
+  if (!module.setup()) ESP.restart();
 
-  if (!PuzzleModule::setup())
-    ESP.restart();
-
-  submitButton = Button(SUBMIT_BUTTON_PIN);
-  submitButton.onStateChange = submit;
+  submit_button = Button(SUBMIT_BUTTON_PIN);
+  submit_button.on_state_change(submit);
 
   Display::setup();
   Pot::setup();
 }
 
 void submit(ButtonState state, ButtonState _) {
-  if (state != ButtonState::Pressed)
-    return;
+  if (state != ButtonState::Pressed) return;
   if (selected_station == answer)
-    PuzzleModule::solve();
+    module.solve();
   else
-    PuzzleModule::strike();
+    module.strike();
 }
 
 int station() {
@@ -70,19 +66,17 @@ int station() {
 bool in_range() {
   int lower = selected_station * STATION_RANGE - STATION_TOLERANCE;
   int upper = (selected_station + 1) * STATION_RANGE + STATION_TOLERANCE;
-  int potVal = Pot::value();
-  return lower <= potVal && potVal <= upper;
+  int pot_val = Pot::value();
+  return lower <= pot_val && pot_val <= upper;
 }
 
 void loop() {
-  PuzzleModule::update();
+  module.update();
   Pot::update();
-  if (selected_station == -1 || !in_range())
-    selected_station = station();
-  Display::setValue(stations[selected_station]);
+  if (selected_station == -1 || !in_range()) selected_station = station();
+  Display::set_value(stations[selected_station]);
   Display::update();
-  if (Module::status() != Module::Status::Started)
-    return;
+  if (module.get_state() != PuzzleModuleState::Started) return;
   Morse::update();
-  submitButton.update();
+  submit_button.update();
 }
